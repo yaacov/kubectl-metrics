@@ -14,10 +14,9 @@ import (
 	"github.com/yaacov/kubectl-metrics/pkg/metrics"
 	"github.com/yaacov/kubectl-metrics/pkg/prometheus"
 	ptable "github.com/yaacov/kubectl-metrics/pkg/table"
+	"github.com/yaacov/kubectl-metrics/pkg/version"
 	"k8s.io/klog/v2"
 )
-
-const version = "0.1.0"
 
 // MetricsReadInput is the input schema for the metrics_read tool.
 type MetricsReadInput struct {
@@ -36,7 +35,7 @@ type MetricsHelpInput struct {
 func CreateServer(capturedHeaders http.Header) *mcpsdk.Server {
 	server := mcpsdk.NewServer(&mcpsdk.Implementation{
 		Name:    "kubectl-metrics",
-		Version: version,
+		Version: version.Version,
 	}, &mcpsdk.ServerOptions{
 		Instructions: "Prometheus / Thanos metrics query server. " +
 			"Use metrics_help to discover available preset queries. " +

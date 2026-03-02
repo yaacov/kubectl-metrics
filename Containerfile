@@ -20,7 +20,7 @@ COPY mcp/ mcp/
 # Build kubectl-metrics
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build \
     -a \
-    -ldflags "-s -w" \
+    -ldflags "-s -w -X github.com/yaacov/kubectl-metrics/pkg/version.Version=${VERSION}" \
     -o kubectl-metrics \
     main.go
 

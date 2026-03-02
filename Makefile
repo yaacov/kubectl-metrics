@@ -3,6 +3,13 @@ PKG     := github.com/yaacov/kubectl-metrics
 
 VERSION_GIT := $(shell git describe --tags 2>/dev/null || echo "0.0.0-dev")
 VERSION ?= ${VERSION_GIT}
+GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+BUILD_DATE := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
+
+LDFLAGS := -s -w \
+	-X $(PKG)/pkg/version.Version=$(VERSION) \
+	-X $(PKG)/pkg/version.GitCommit=$(GIT_COMMIT) \
+	-X $(PKG)/pkg/version.BuildDate=$(BUILD_DATE)
 
 GOOS   := $(shell go env GOOS)
 GOARCH := $(shell go env GOARCH)
@@ -33,7 +40,7 @@ help:
 ## build: Build the kubectl-metrics binary for current platform
 build:
 	@echo "Building for ${GOOS}/${GOARCH}"
-	CGO_ENABLED=0 go build -ldflags='-s -w' -o $(BINARY) .
+	CGO_ENABLED=0 go build -ldflags '$(LDFLAGS)' -o $(BINARY) .
 
 ## clean: Remove build artifacts
 clean:
@@ -77,31 +84,31 @@ vendor:
 .PHONY: build-linux-amd64
 build-linux-amd64:
 	@echo "Building for linux/amd64"
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-s -w' -o $(BINARY)-linux-amd64 .
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '$(LDFLAGS)' -o $(BINARY)-linux-amd64 .
 
 ## build-linux-arm64: Cross-compile for linux/arm64
 .PHONY: build-linux-arm64
 build-linux-arm64:
 	@echo "Building for linux/arm64"
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -ldflags '-s -w' -o $(BINARY)-linux-arm64 .
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -ldflags '$(LDFLAGS)' -o $(BINARY)-linux-arm64 .
 
 ## build-darwin-amd64: Cross-compile for darwin/amd64
 .PHONY: build-darwin-amd64
 build-darwin-amd64:
 	@echo "Building for darwin/amd64"
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -a -ldflags '-s -w' -o $(BINARY)-darwin-amd64 .
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -a -ldflags '$(LDFLAGS)' -o $(BINARY)-darwin-amd64 .
 
 ## build-darwin-arm64: Cross-compile for darwin/arm64
 .PHONY: build-darwin-arm64
 build-darwin-arm64:
 	@echo "Building for darwin/arm64"
-	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -a -ldflags '-s -w' -o $(BINARY)-darwin-arm64 .
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -a -ldflags '$(LDFLAGS)' -o $(BINARY)-darwin-arm64 .
 
 ## build-windows-amd64: Cross-compile for windows/amd64
 .PHONY: build-windows-amd64
 build-windows-amd64:
 	@echo "Building for windows/amd64"
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a -ldflags '-s -w' -o $(BINARY)-windows-amd64.exe .
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a -ldflags '$(LDFLAGS)' -o $(BINARY)-windows-amd64.exe .
 
 ## build-all: Build for all platforms (linux, darwin, windows)
 .PHONY: build-all
