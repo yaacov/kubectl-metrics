@@ -21,13 +21,13 @@ const version = "0.1.0"
 
 // MetricsReadInput is the input schema for the metrics_read tool.
 type MetricsReadInput struct {
-	Command string         `json:"command" jsonschema:"required,description=Subcommand: query | query_range | discover | labels | preset"`
-	Flags   map[string]any `json:"flags,omitempty" jsonschema:"description=Command-specific parameters (e.g. query: \"up\"\\, format: \"json\"\\, namespace: \"mtv-test\")"`
+	Command string         `json:"command" jsonschema:"Subcommand: query | query_range | discover | labels | preset"`
+	Flags   map[string]any `json:"flags,omitempty" jsonschema:"Command-specific parameters (e.g. query: 'up', format: 'json', namespace: 'mtv-test')"`
 }
 
 // MetricsHelpInput is the input schema for the metrics_help tool.
 type MetricsHelpInput struct {
-	Command string `json:"command,omitempty" jsonschema:"description=Subcommand or topic to get help for (e.g. query\\, query_range\\, discover\\, labels\\, preset\\, promql). Omit for overview."`
+	Command string `json:"command,omitempty" jsonschema:"Subcommand or topic to get help for (e.g. query, query_range, discover, labels, preset, promql). Omit for overview."`
 }
 
 // CreateServer creates an MCP server with metrics tools registered.
