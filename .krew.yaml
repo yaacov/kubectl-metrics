@@ -10,30 +10,6 @@ spec:
     kubectl-metrics is a kubectl plugin for querying Prometheus and Thanos
     metrics on OpenShift clusters. It works as both a CLI tool and an MCP
     server for AI assistants (Claude Desktop, Cursor IDE, OpenShift Lightspeed).
-
-    Features:
-    - Discover available metrics with keyword filtering
-    - Run instant and range PromQL queries
-    - Preset queries for common metrics (storage, network, migrations)
-    - Auto-discovers Prometheus/Thanos from cluster routes
-    - MCP server mode (stdio and SSE) for AI assistant integration
-    - Standard kubectl authentication (kubeconfig, context, token)
-  caveats: |
-    This plugin requires kubectl to be installed and configured to access
-    an OpenShift cluster with Prometheus/Thanos deployed.
-
-    Examples:
-      # Discover available metrics
-      kubectl metrics discover --keyword http
-
-      # Run an instant query
-      kubectl metrics query --query "up"
-
-      # Run a preset query
-      kubectl metrics preset --name mtv_migration_status
-
-      # Start MCP server for AI assistants
-      kubectl metrics mcp-server
   platforms:
   - selector:
       matchLabels:
