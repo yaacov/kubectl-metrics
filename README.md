@@ -27,6 +27,8 @@ kubectl metrics --help
 
 For more options (manual download, shell completion, uninstall), see [Installation](docs/installation.md).
 
+[![asciicast](https://asciinema.org/a/TKJnpVPAZtJiaBsB.svg)](https://asciinema.org/a/TKJnpVPAZtJiaBsB)
+
 ## Quick Start
 
 ```bash
