@@ -96,7 +96,7 @@ Omit command for an overview of all subcommands and available presets.`,
 	}, wrapWithHeaders(handleMetricsHelp, capturedHeaders))
 }
 
-func handleMetricsRead(ctx context.Context, req *mcpsdk.CallToolRequest, input MetricsReadInput) (*mcpsdk.CallToolResult, struct{}, error) {
+func handleMetricsRead(ctx context.Context, req *mcpsdk.CallToolRequest, input MetricsReadInput) (*mcpsdk.CallToolResult, any, error) {
 	// Extract credentials from request headers into context
 	if req.Extra != nil && req.Extra.Header != nil {
 		ctx = connection.WithCredsFromHeaders(ctx, req.Extra.Header)
@@ -104,12 +104,12 @@ func handleMetricsRead(ctx context.Context, req *mcpsdk.CallToolRequest, input M
 
 	promURL, rt := connection.ResolveConnection(ctx)
 	if promURL == "" {
-		return textResult("Prometheus URL not configured. Provide it via --url flag, X-Metrics-Server header, or ensure cluster access for auto-discovery."), struct{}{}, nil
+		return textResult("Prometheus URL not configured. Provide it via --url flag, X-Metrics-Server header, or ensure cluster access for auto-discovery."), nil, nil
 	}
 
 	command := strings.TrimSpace(strings.ToLower(input.Command))
 	if command == "" {
-		return textResult("Missing required field 'command'. Use one of: query, query_range, discover, labels, preset.\nCall metrics_help for details."), struct{}{}, nil
+		return textResult("Missing required field 'command'. Use one of: query, query_range, discover, labels, preset.\nCall metrics_help for details."), nil, nil
 	}
 	flags := input.Flags
 	if flags == nil {
@@ -164,19 +164,19 @@ func handleMetricsRead(ctx context.Context, req *mcpsdk.CallToolRequest, input M
 			metrics.FlagStr(flags, "output"),
 			tableOpts)
 	default:
-		return textResult(fmt.Sprintf("Unknown command %q. Available: query, query_range, discover, labels, preset.\nCall metrics_help(\"%s\") for details.", command, command)), struct{}{}, nil
+		return textResult(fmt.Sprintf("Unknown command %q. Available: query, query_range, discover, labels, preset.\nCall metrics_help(\"%s\") for details.", command, command)), nil, nil
 	}
 
 	if err != nil {
-		return textResult(metrics.FriendlyError(command, err, promURL)), struct{}{}, nil
+		return textResult(metrics.FriendlyError(command, err, promURL)), nil, nil
 	}
 	klog.V(1).Infof("metrics_read %s completed in %.3fs", command, time.Since(t0).Seconds())
-	return textResult(result), struct{}{}, nil
+	return textResult(result), nil, nil
 }
 
-func handleMetricsHelp(ctx context.Context, req *mcpsdk.CallToolRequest, input MetricsHelpInput) (*mcpsdk.CallToolResult, struct{}, error) {
+func handleMetricsHelp(ctx context.Context, req *mcpsdk.CallToolRequest, input MetricsHelpInput) (*mcpsdk.CallToolResult, any, error) {
 	command := strings.TrimSpace(strings.ToLower(input.Command))
-	return textResult(help.GenerateHelp(command)), struct{}{}, nil
+	return textResult(help.GenerateHelp(command)), nil, nil
 }
 
 // textResult creates a simple text CallToolResult.
