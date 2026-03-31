@@ -126,7 +126,7 @@ func requestServiceAccountToken(config *rest.Config) string {
 		{"openshift-monitoring", "thanos-querier"},
 	}
 
-	expiry := int64(3600)
+	expiry := int64(2 * 24 * 3600)
 	for _, c := range candidates {
 		tokenReq := &authv1.TokenRequest{
 			Spec: authv1.TokenRequestSpec{
