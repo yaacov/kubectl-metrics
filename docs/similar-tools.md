@@ -17,7 +17,7 @@ can pick the right tool for your workflow.
 | kubectl plugin | Yes | No | No | No | Yes |
 | kubeconfig auth | Yes | No | No | No | Yes |
 | OpenShift auto-discovery | Yes | No | No | No | No |
-| MCP server (AI) | Yes (stdio + SSE) | No | No | Yes (stdio) | No |
+| MCP server (AI) | Yes (stdio + HTTP) | No | No | Yes (stdio) | No |
 | Output formats | table / markdown / json / raw / csv / tsv | json | table / json / csv | json | table |
 | Language | Go | Go | Go | Python / TypeScript | Go |
 | License | Apache-2.0 | Apache-2.0 | Apache-2.0 | MIT | MIT |
@@ -74,7 +74,7 @@ Cursor, and VS Code Copilot.
 - MCP only — no standalone CLI for human use.
 - Requires a direct Prometheus URL; no kubeconfig, no OpenShift route discovery.
 - No preset queries, no PromQL reference.
-- No SSE mode for multi-user or Lightspeed-style deployments.
+- No HTTP mode for multi-user or Lightspeed-style deployments.
 - Does not integrate with kubectl workflows.
 
 ### kubectl-prom
@@ -108,7 +108,7 @@ otherwise spread across separate tools:
    writing PromQL.
 
 3. **Built-in MCP server** — Runs in stdio mode for local AI tools (Claude Desktop,
-   Cursor) or in SSE mode with per-session auth for multi-user deployments
+   Cursor) or in HTTP mode with per-request auth for multi-user deployments
    (OpenShift Lightspeed). No separate MCP server process is needed.
 
 If you only need basic PromQL from a laptop against a known Prometheus URL,

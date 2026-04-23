@@ -73,10 +73,10 @@ podman run --rm -p 8443:8443 \
 
 ## Connecting an AI Client
 
-Once the container is running, the SSE endpoint is available at:
+Once the container is running, the HTTP endpoint is available at:
 
 ```
-http://localhost:8080/sse
+http://localhost:8080/mcp
 ```
 
 **Claude Desktop** (add to `claude_desktop_config.json`):
@@ -85,7 +85,7 @@ http://localhost:8080/sse
 {
   "mcpServers": {
     "kubectl-metrics": {
-      "url": "http://localhost:8080/sse"
+      "url": "http://localhost:8080/mcp"
     }
   }
 }
@@ -93,11 +93,11 @@ http://localhost:8080/sse
 
 **Cursor IDE:**
 
-Settings → MCP → Add Server → Type: `sse`, URL: `http://localhost:8080/sse`
+Settings → MCP → Add Server → Type: `streamableHttp`, URL: `http://localhost:8080/mcp`
 
-## Per-Session Authentication via Headers
+## Per-Request Authentication via Headers
 
-In SSE mode the container also accepts per-request authentication headers. This lets multiple clients share one server, each with their own credentials:
+In HTTP mode the container also accepts per-request authentication headers. This lets multiple clients share one server, each with their own credentials:
 
 | Header | Description |
 |--------|-------------|

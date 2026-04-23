@@ -60,9 +60,9 @@ kubectl metrics discover --url https://prometheus.example.com
 kubectl metrics discover --kubeconfig /path/to/config --context my-cluster
 ```
 
-## SSE Mode (MCP Server)
+## HTTP Mode (MCP Server)
 
-In SSE mode, per-session credentials can be provided via HTTP headers, which take highest priority:
+In HTTP mode, per-request credentials can be provided via HTTP headers, which take highest priority:
 
 ```
 Authorization: Bearer <token>

@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,9 +32,10 @@ type MetricsHelpInput struct {
 }
 
 // CreateServer creates an MCP server with metrics tools registered.
-// capturedHeaders are injected into every tool call's context for
-// transparent per-session authentication.
-func CreateServer(capturedHeaders http.Header) *mcpsdk.Server {
+// In HTTP mode the SDK populates req.Extra.Header on every POST with
+// that request's HTTP headers, giving each tool call fresh auth credentials.
+// In stdio mode there are no HTTP headers and we fall back to CLI defaults.
+func CreateServer() *mcpsdk.Server {
 	server := mcpsdk.NewServer(&mcpsdk.Implementation{
 		Name:    "kubectl-metrics",
 		Version: version.Version,
@@ -46,11 +46,11 @@ func CreateServer(capturedHeaders http.Header) *mcpsdk.Server {
 			"Use metrics_read with command \"query\" or \"query_range\" for ad-hoc PromQL queries.",
 	})
 
-	registerTools(server, capturedHeaders)
+	registerTools(server)
 	return server
 }
 
-func registerTools(server *mcpsdk.Server, capturedHeaders http.Header) {
+func registerTools(server *mcpsdk.Server) {
 	// ---- metrics_read ----
 	// NOTE: The tool description below intentionally omits CLI-only display
 	// flags (local_time, no_headers) to keep the LLM context lean. The handler
@@ -86,7 +86,7 @@ Examples:
   {command: "preset", flags: {name: "mtv_net_throughput", start: "-2h", step: "30s"}}
   {command: "query_range", flags: {query: "rate(http_requests_total[5m])", start: "-1h", output: "tsv", filename: "data.tsv"}}
   {command: "query", flags: {query: "up", selector: "namespace=prod,job=~prom.*"}}`,
-	}, wrapWithHeaders(handleMetricsRead, capturedHeaders))
+	}, handleMetricsRead)
 
 	// ---- metrics_help ----
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
@@ -98,7 +98,7 @@ available flags and their meaning. Call metrics_help("promql") for PromQL syntax
 
 Commands: query, query_range, discover, labels, preset, promql
 Omit command for an overview of all subcommands and available presets.`,
-	}, wrapWithHeaders(handleMetricsHelp, capturedHeaders))
+	}, handleMetricsHelp)
 }
 
 func handleMetricsRead(ctx context.Context, req *mcpsdk.CallToolRequest, input MetricsReadInput) (*mcpsdk.CallToolResult, any, error) {
@@ -291,20 +291,5 @@ func handleMetricsHelp(ctx context.Context, req *mcpsdk.CallToolRequest, input M
 func textResult(text string) *mcpsdk.CallToolResult {
 	return &mcpsdk.CallToolResult{
 		Content: []mcpsdk.Content{&mcpsdk.TextContent{Text: text}},
-	}
-}
-
-// wrapWithHeaders wraps a tool handler to inject captured HTTP headers into RequestExtra.
-func wrapWithHeaders[In, Out any](
-	handler func(context.Context, *mcpsdk.CallToolRequest, In) (*mcpsdk.CallToolResult, Out, error),
-	headers http.Header,
-) func(context.Context, *mcpsdk.CallToolRequest, In) (*mcpsdk.CallToolResult, Out, error) {
-	return func(ctx context.Context, req *mcpsdk.CallToolRequest, input In) (*mcpsdk.CallToolResult, Out, error) {
-		if req.Extra == nil && headers != nil {
-			req.Extra = &mcpsdk.RequestExtra{Header: headers}
-		} else if req.Extra != nil && req.Extra.Header == nil && headers != nil {
-			req.Extra.Header = headers
-		}
-		return handler(ctx, req, input)
 	}
 }

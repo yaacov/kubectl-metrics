@@ -53,8 +53,8 @@ kubectl metrics preset --name mtv_migration_status
 # MCP server (stdio, for Claude Desktop / Cursor IDE)
 kubectl metrics mcp-server
 
-# MCP server (SSE, for OpenShift Lightspeed)
-kubectl metrics mcp-server --sse --port 8080
+# MCP server (HTTP, for OpenShift Lightspeed)
+kubectl metrics mcp-server --http --port 8080
 
 # MCP server from container image
 podman run --rm -p 8080:8080 \
@@ -114,7 +114,7 @@ See the [docs/](docs/) directory for detailed guides:
 - [Metrics Reference](docs/metrics-reference.md) — metric names and label tables
 
 **MCP and AI integration**
-- [MCP Server](docs/mcp-server.md) — stdio and SSE modes, AI assistant setup
+- [MCP Server](docs/mcp-server.md) — stdio and HTTP modes, AI assistant setup
 - [Containerized](docs/containerized.md) — running the MCP server from a container image
 
 **Operations**

@@ -59,6 +59,11 @@ test:
 e2e: build
 	python3 tests/e2e_smoke.py
 
+## e2e-mcp: Run MCP e2e tests (builds binary, starts server, runs tests, stops server)
+.PHONY: e2e-mcp
+e2e-mcp: build
+	$(MAKE) -C e2e/mcp test-full
+
 ## fmt: Format Go code
 fmt:
 	go fmt ./...
@@ -213,7 +218,7 @@ deploy-route:
 	@echo "Creating route to expose MCP server..."
 	oc apply -f deploy/mcp-route.yaml
 	@echo "Route created. Access URL:"
-	@oc get route kubectl-metrics-mcp-server -n openshift-monitoring -o jsonpath='https://{.spec.host}/sse{"\n"}' 2>/dev/null || echo "  (route not ready yet)"
+	@oc get route kubectl-metrics-mcp-server -n openshift-monitoring -o jsonpath='https://{.spec.host}/mcp{"\n"}' 2>/dev/null || echo "  (route not ready yet)"
 
 ## undeploy-route: Remove the external route for the MCP server
 .PHONY: undeploy-route
