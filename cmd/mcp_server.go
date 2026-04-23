@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	sseMode  bool
+	httpMode bool
 	port     string
 	host     string
 	certFile string
@@ -33,18 +33,18 @@ This server provides AI assistants with access to Prometheus/Thanos metrics.
 
 Modes:
   Default: Stdio mode for AI assistant integration
-  --sse:   HTTP server mode with optional TLS
+  --http:  HTTP server mode using Streamable HTTP transport
 
 Security:
   --cert-file:   Path to TLS certificate file (enables TLS when both cert and key provided)
   --key-file:    Path to TLS private key file (enables TLS when both cert and key provided)
 
-SSE Mode Authentication (HTTP Headers):
+HTTP Mode Authentication (HTTP Headers):
   Authorization: Bearer <token>    - bearer token for Prometheus auth
   X-Kubernetes-Server: <url>       - Kubernetes API server URL (for route discovery)
   X-Metrics-Server: <url>          - Prometheus/Thanos URL override per session
 
-  Precedence: HTTP headers (per-session) > CLI flags (--token/--server/--url) > kubeconfig / auto-discovered
+  Precedence: HTTP headers (per-request) > CLI flags (--token/--server/--url) > kubeconfig / auto-discovered
 
 Quick Setup for AI Assistants:
 
@@ -57,19 +57,19 @@ Cursor IDE: Settings → MCP → Add Server (Name: kubectl-metrics, Command: kub
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
-		if sseMode {
-			return runSSE(ctx, sigChan)
+		if httpMode {
+			return runHTTP(ctx, sigChan)
 		}
 		return runStdio(ctx, sigChan)
 	},
 }
 
-func runSSE(ctx context.Context, sigChan chan os.Signal) error {
+func runHTTP(ctx context.Context, sigChan chan os.Signal) error {
 	addr := net.JoinHostPort(host, port)
 
-	innerHandler := mcpsdk.NewSSEHandler(func(req *http.Request) *mcpsdk.Server {
-		return mcpserver.CreateServer(req.Header)
-	}, nil)
+	innerHandler := mcpsdk.NewStreamableHTTPHandler(func(req *http.Request) *mcpsdk.Server {
+		return mcpserver.CreateServer()
+	}, &mcpsdk.StreamableHTTPOptions{})
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
@@ -87,18 +87,21 @@ func runSSE(ctx context.Context, sigChan chan os.Signal) error {
 	})
 
 	server := &http.Server{
-		Addr:    addr,
-		Handler: handler,
+		Addr:              addr,
+		Handler:           handler,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	errChan := make(chan error, 1)
 	go func() {
 		useTLS := certFile != "" && keyFile != ""
 		if useTLS {
-			klog.Infof("Starting kubectl-metrics MCP server with TLS on %s", addr)
+			klog.Infof("Starting kubectl-metrics MCP server with TLS in HTTP mode on %s", addr)
+			klog.Infof("Connect clients to: https://%s/mcp", addr)
 			errChan <- server.ListenAndServeTLS(certFile, keyFile)
 		} else {
-			klog.Infof("Starting kubectl-metrics MCP server on %s", addr)
+			klog.Infof("Starting kubectl-metrics MCP server in HTTP mode on %s", addr)
+			klog.Infof("Connect clients to: http://%s/mcp", addr)
 			errChan <- server.ListenAndServe()
 		}
 	}()
@@ -127,7 +130,7 @@ func runSSE(ctx context.Context, sigChan chan os.Signal) error {
 }
 
 func runStdio(ctx context.Context, sigChan chan os.Signal) error {
-	server := mcpserver.CreateServer(nil)
+	server := mcpserver.CreateServer()
 
 	klog.V(1).Info("Starting kubectl-metrics MCP server in stdio mode")
 
@@ -146,9 +149,9 @@ func runStdio(ctx context.Context, sigChan chan os.Signal) error {
 }
 
 func init() {
-	mcpServerCmd.Flags().BoolVar(&sseMode, "sse", false, "Run in SSE (Server-Sent Events) mode over HTTP")
-	mcpServerCmd.Flags().StringVar(&port, "port", "9091", "Port to listen on for SSE mode")
-	mcpServerCmd.Flags().StringVar(&host, "host", "0.0.0.0", "Host address to bind to for SSE mode")
+	mcpServerCmd.Flags().BoolVar(&httpMode, "http", false, "Run in HTTP mode using Streamable HTTP transport")
+	mcpServerCmd.Flags().StringVar(&port, "port", "9091", "Port to listen on for HTTP mode")
+	mcpServerCmd.Flags().StringVar(&host, "host", "127.0.0.1", "Host address to bind to for HTTP mode (use 0.0.0.0 to expose on all interfaces)")
 	mcpServerCmd.Flags().StringVar(&certFile, "cert-file", "", "Path to TLS certificate file")
 	mcpServerCmd.Flags().StringVar(&keyFile, "key-file", "", "Path to TLS private key file")
 	rootCmd.AddCommand(mcpServerCmd)

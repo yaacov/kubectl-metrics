@@ -1,6 +1,6 @@
 # kubectl-metrics MCP Server — OpenShift Deployment
 #
-# Deploys the MCP server Deployment + Service in SSE mode on an OpenShift cluster.
+# Deploys the MCP server Deployment + Service in HTTP mode on an OpenShift cluster.
 # Lightspeed integration is handled separately (see deploy/olsconfig-patch.yaml).
 #
 # Quick start:
@@ -24,7 +24,7 @@
 #   The Service uses plain HTTP communication.
 #   The Route provides TLS termination at the edge (ingress router).
 #
-# SSE endpoint: http://kubectl-metrics-mcp-server.openshift-monitoring.svc:8080/sse
+# HTTP endpoint: http://kubectl-metrics-mcp-server.openshift-monitoring.svc:8080/mcp
 # ---
 
 apiVersion: v1

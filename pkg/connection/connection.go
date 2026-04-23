@@ -2,7 +2,7 @@
 // discovery for kubectl-metrics.
 //
 // Credentials flow through three tiers (highest priority first):
-//  1. SSE HTTP headers (per-session)
+//  1. HTTP headers (per-request)
 //  2. CLI defaults (kubeconfig via client-go)
 //  3. Auto-discovered from cluster
 package connection
@@ -33,7 +33,7 @@ const (
 // --- Transport helpers ---
 
 // bearerTokenTransport injects a static bearer token into every request.
-// Used for MCP/SSE sessions where the token arrives via HTTP headers.
+// Used for MCP HTTP sessions where the token arrives via HTTP headers.
 type bearerTokenTransport struct {
 	token string
 	base  http.RoundTripper
@@ -154,9 +154,9 @@ func SetDefaultMetricsURL(u string) { defaultMetricsURL = u }
 
 // ResolveConnection returns (prometheusURL, transport) using the 3-tier precedence:
 //
-//	context (SSE headers) > CLI defaults > auto-discovery
+//	context (HTTP headers) > CLI defaults > auto-discovery
 func ResolveConnection(ctx context.Context) (string, http.RoundTripper) {
-	// 1. Context (from SSE headers)
+	// 1. Context (from HTTP headers)
 	metricsURL, _ := GetMetricsURL(ctx)
 	rt, _ := GetTransport(ctx)
 	kubeServer, _ := GetKubeServer(ctx)

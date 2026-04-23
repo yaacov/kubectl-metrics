@@ -33,7 +33,7 @@ ARG TARGETARCH=amd64
 COPY --from=builder --chmod=755 /build/kubectl-metrics /usr/local/bin/kubectl-metrics
 
 # --- Environment variables ---
-# SSE server settings
+# HTTP server settings
 ENV MCP_HOST="0.0.0.0" \
     MCP_PORT="8080"
 
@@ -41,7 +41,7 @@ ENV MCP_HOST="0.0.0.0" \
 ENV MCP_CERT_FILE="" \
     MCP_KEY_FILE=""
 
-# Kubernetes authentication (optional - override via HTTP headers in SSE mode)
+# Kubernetes authentication (optional - override via HTTP headers in HTTP mode)
 ENV MCP_KUBE_SERVER="" \
     MCP_KUBE_TOKEN="" \
     MCP_KUBE_INSECURE=""
@@ -55,7 +55,7 @@ WORKDIR /home/metrics
 EXPOSE 8080
 
 ENTRYPOINT ["/bin/sh", "-c", "\
-  exec kubectl-metrics mcp-server --sse \
+  exec kubectl-metrics mcp-server --http \
     --host \"${MCP_HOST}\" \
     --port \"${MCP_PORT}\" \
     ${MCP_CERT_FILE:+--cert-file \"${MCP_CERT_FILE}\"} \
@@ -67,7 +67,7 @@ ENTRYPOINT ["/bin/sh", "-c", "\
 
 LABEL name="kubectl-metrics-mcp-server" \
       summary="kubectl-metrics MCP server for AI-assisted Prometheus/Thanos monitoring" \
-      description="MCP (Model Context Protocol) server exposing Prometheus/Thanos metrics queries for AI assistants. Runs in SSE mode over HTTP." \
+      description="MCP (Model Context Protocol) server exposing Prometheus/Thanos metrics queries for AI assistants. Runs in HTTP mode using Streamable HTTP transport." \
       io.k8s.display-name="kubectl-metrics MCP Server" \
-      io.k8s.description="MCP server for kubectl-metrics providing AI-assisted Prometheus/Thanos metric queries via SSE transport." \
+      io.k8s.description="MCP server for kubectl-metrics providing AI-assisted Prometheus/Thanos metric queries via Streamable HTTP transport." \
       maintainer="Yaacov Zamir <kobi.zamir@gmail.com>"

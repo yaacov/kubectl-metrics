@@ -15,6 +15,21 @@ vendor/
 # Test artifacts
 coverage.out
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+.pytest_cache/
+*.egg
+
+# E2E MCP server artifacts
+e2e/mcp/.server.log
+e2e/mcp/.server.pid
+e2e/mcp/.kubeconfig
+e2e/mcp/.env
+
 # IDE
 .idea/
 .vscode/

@@ -12,22 +12,22 @@ For local AI assistant integration (Claude Desktop, Cursor IDE).
 kubectl metrics mcp-server
 ```
 
-### SSE (HTTP)
+### HTTP (Streamable HTTP)
 
 For network-accessible deployments (OpenShift Lightspeed, remote clients).
 
 ```bash
-kubectl metrics mcp-server --sse --port 8080
-kubectl metrics mcp-server --sse --port 8443 --cert-file tls.crt --key-file tls.key
+kubectl metrics mcp-server --http --port 8080
+kubectl metrics mcp-server --http --port 8443 --cert-file tls.crt --key-file tls.key
 ```
 
 **Flags:**
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--sse` | `false` | Enable SSE mode over HTTP |
+| `--http` | `false` | Enable HTTP mode using Streamable HTTP transport |
 | `--port` | `9091` | Listen port |
-| `--host` | `0.0.0.0` | Bind address |
+| `--host` | `127.0.0.1` | Bind address (use `0.0.0.0` to expose on all interfaces) |
 | `--cert-file` | | TLS certificate (enables HTTPS) |
 | `--key-file` | | TLS private key (enables HTTPS) |
 
@@ -96,17 +96,17 @@ Settings → MCP → Add Server:
 - **Command:** kubectl
 - **Args:** metrics mcp-server
 
-### SSE Mode (remote)
+### HTTP Mode (remote)
 
-Point the client at the SSE endpoint:
+Point the client at the HTTP endpoint:
 
+```text
+http://<host>:<port>/mcp
 ```
-http://<host>:<port>/sse
-```
 
-## SSE Authentication
+## HTTP Mode Authentication
 
-In SSE mode, per-session credentials are passed via HTTP headers:
+In HTTP mode, per-request credentials are passed via HTTP headers:
 
 | Header | Description |
 |--------|-------------|
@@ -114,4 +114,4 @@ In SSE mode, per-session credentials are passed via HTTP headers:
 | `X-Kubernetes-Server: <url>` | Kubernetes API server URL |
 | `X-Metrics-Server: <url>` | Prometheus/Thanos URL override |
 
-**Precedence:** HTTP headers (per-session) > CLI flags > kubeconfig / auto-discovery
+**Precedence:** HTTP headers (per-request) > CLI flags > kubeconfig / auto-discovery
